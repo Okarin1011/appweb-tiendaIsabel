@@ -105,7 +105,7 @@ export function CustomersTable({ customers }: CustomersTableProps) {
                 <TableHead>Cliente</TableHead>
                 <TableHead>Contacto</TableHead>
                 <TableHead>Credito Activo</TableHead>
-                <TableHead className="w-[70px]"></TableHead>
+                <TableHead className="w-30"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -111,7 +111,7 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
               />
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full md:w-[180px]">
+              <SelectTrigger className="w-full md:w-45">
                 <SelectValue placeholder="Categoria" />
               </SelectTrigger>
               <SelectContent>
@@ -122,7 +122,7 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[150px]">
+              <SelectTrigger className="w-full md:w-37.5">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
@@ -142,13 +142,13 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px]">Imagen</TableHead>
+                <TableHead className="w-20">Imagen</TableHead>
                 <TableHead>Producto</TableHead>
                 <TableHead>Categoria</TableHead>
                 <TableHead className="text-right">Precio</TableHead>
                 <TableHead className="text-center">Stock</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
-                <TableHead className="w-[70px]"></TableHead>
+                <TableHead className="w-17.5"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

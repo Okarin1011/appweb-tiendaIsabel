@@ -22,7 +22,11 @@ interface Settings {
   currency: string
   default_credit_days: number
   receipt_footer: string | null
-} | null
+} 
+
+interface Props {
+  settings: Settings | null;
+}
 
 interface StoreSettingsFormProps {
   settings: Settings

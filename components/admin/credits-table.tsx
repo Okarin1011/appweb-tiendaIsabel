@@ -39,7 +39,7 @@ import {
   XCircle,
   Clock
 } from 'lucide-react'
-import { addCreditPayment, updateCreditStatus } from '@/lib/actions/credits'
+import { registerPayment, updateCreditStatus } from '@/lib/actions/credits'
 import { toast } from 'sonner'
 
 interface Credit {
@@ -104,7 +104,15 @@ export function CreditsTable({ credits }: CreditsTableProps) {
 
     setIsProcessing(true)
     try {
-      const result = await addCreditPayment(paymentDialog.id, amount, 'Pago de abono')
+      const result = await registerPayment({
+        credit_id: paymentDialog.id,
+        movement_type: 'pago',
+        amount,
+        payment_method: 'efectivo',
+        reference_number: null,
+        notes: 'Pago de abono',
+        processed_by: null
+      })
       if (result.success) {
         toast.success('Pago registrado')
         setPaymentDialog(null)
@@ -215,7 +223,7 @@ export function CreditsTable({ credits }: CreditsTableProps) {
                 <TableHead className="text-right">Saldo</TableHead>
                 <TableHead className="text-center">Vencimiento</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
-                <TableHead className="w-[70px]"></TableHead>
+                <TableHead className="w-17.5"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

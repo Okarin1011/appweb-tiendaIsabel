@@ -54,7 +54,11 @@ interface Customer {
 interface Settings {
   store_name: string
   tax_rate: number
-} | null
+} 
+
+interface Props {
+  settings: Settings | null;
+}
 
 interface CartItem {
   variant_id: string

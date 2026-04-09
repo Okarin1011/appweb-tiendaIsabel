@@ -248,7 +248,7 @@ export function ProductForm({ categories, sizes, product }: ProductFormProps) {
                         value={variant.size_id}
                         onValueChange={(value) => updateVariant(index, 'size_id', value)}
                       >
-                        <SelectTrigger className="w-[120px]">
+                        <SelectTrigger className="w-30">
                           <SelectValue placeholder="Talla" />
                         </SelectTrigger>
                         <SelectContent>
@@ -263,7 +263,7 @@ export function ProductForm({ categories, sizes, product }: ProductFormProps) {
                         value={variant.stock}
                         onChange={(e) => updateVariant(index, 'stock', e.target.value)}
                         placeholder="Stock"
-                        className="w-[100px]"
+                        className="w-25"
                       />
                       <Input
                         type="number"
