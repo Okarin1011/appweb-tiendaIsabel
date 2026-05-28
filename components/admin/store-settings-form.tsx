@@ -39,10 +39,8 @@ export function StoreSettingsForm({ settings }: StoreSettingsFormProps) {
   const [address, setAddress] = useState(settings?.address || '')
   const [phone, setPhone] = useState(settings?.phone || '')
   const [email, setEmail] = useState(settings?.email || '')
-  const [taxRate, setTaxRate] = useState(settings?.tax_rate?.toString() || '16')
-  const [currency, setCurrency] = useState(settings?.currency || 'MXN')
-  const [defaultCreditDays, setDefaultCreditDays] = useState(settings?.default_credit_days?.toString() || '30')
-  const [receiptFooter, setReceiptFooter] = useState(settings?.receipt_footer || '')
+  const [taxRate, setTaxRate] = useState(settings?.tax_rate?.toString() || '0')
+  const [currency, setCurrency] = useState(settings?.currency || 'COP')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,19 +54,12 @@ export function StoreSettingsForm({ settings }: StoreSettingsFormProps) {
         phone: phone.trim() || null,
         email: email.trim() || null,
         tax_rate: Number(taxRate) || 0,
-        currency: currency.trim() || 'MXN',
-        default_credit_days: Number(defaultCreditDays) || 30,
-        receipt_footer: receiptFooter.trim() || null,
+        currency: currency.trim() || 'COP',
       }
 
-      const result = await updateStoreSettings(settings?.id || null, settingsData)
-
-      if (result.success) {
-        toast.success('Configuracion guardada')
-        router.refresh()
-      } else {
-        toast.error(result.error || 'Error al guardar')
-      }
+      await updateStoreSettings(settings?.id || null, settingsData)
+      toast.success('Configuracion guardada')
+      router.refresh()
     } catch (error) {
       toast.error('Error al guardar la configuracion')
     } finally {

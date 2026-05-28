@@ -183,8 +183,8 @@ export async function createSale({ sale, items, creditData }: CreateSaleData) {
     if (creditError) throw new Error(creditError.message)
   }
 
-  revalidateTag('sales', 'max')
-  revalidateTag('products', 'max') // Stock was updated via trigger
+  revalidateTag('sales')
+  revalidateTag('products') // Stock was updated via trigger
   
   return newSale
 }
@@ -219,8 +219,8 @@ export async function cancelSale(id: string) {
 
   if (deleteError) throw new Error(deleteError.message)
 
-  revalidateTag('sales', 'max')
-  revalidateTag('products', 'max')
+  revalidateTag('sales')
+  revalidateTag('products')
   
   return true
 }

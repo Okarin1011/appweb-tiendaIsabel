@@ -12,9 +12,9 @@ async function getCustomers() {
     .from('customers')
     .select(`
       *,
-      credits (id, current_balance, status)
+      credits (id, balance, status)
     `)
-    .order('name')
+    .order('first_name', { ascending: true })
 
   if (error) {
     console.error('Error fetching customers:', error)

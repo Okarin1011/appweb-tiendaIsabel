@@ -37,11 +37,11 @@ interface Product {
   id: string
   name: string
   description: string | null
-  base_price: number
+  price: number
   status: string
-  categories: { id: string; name: string } | null
-  product_images: { id: string; url: string; is_primary: boolean }[]
-  product_variants: { id: string; stock: number; price: number; sizes: { id: string; name: string } | null }[]
+  category: { id: string; name: string } | null
+  images: { id: string; image_url: string; is_primary: boolean }[] | null
+  variants: { id: string; stock: number; is_available: boolean; size: { id: string; name: string } | null }[] | null
 }
 
 interface Category {
@@ -69,30 +69,31 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase())
-    const matchesCategory = categoryFilter === 'all' || product.categories?.id === categoryFilter
+    const matchesCategory = categoryFilter === 'all' || product.category?.id === categoryFilter
     const matchesStatus = statusFilter === 'all' || product.status === statusFilter
     return matchesSearch && matchesCategory && matchesStatus
   })
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Estas seguro de eliminar este producto?')) return
-    
-    const result = await deleteProduct(id)
-    if (result.success) {
+
+    try {
+      await deleteProduct(id)
       toast.success('Producto eliminado')
       router.refresh()
-    } else {
-      toast.error(result.error || 'Error al eliminar')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Error al eliminar')
     }
   }
 
-  const getTotalStock = (variants: Product['product_variants']) => {
-    return variants.reduce((sum, v) => sum + v.stock, 0)
+  const getTotalStock = (variants: Product['variants']) => {
+    return (variants || []).reduce((sum, v) => sum + v.stock, 0)
   }
 
-  const getPrimaryImage = (images: Product['product_images']) => {
-    const primary = images.find(img => img.is_primary)
-    return primary?.url || images[0]?.url
+  const getPrimaryImage = (images: Product['images']) => {
+    const list = images || []
+    const primary = list.find(img => img.is_primary)
+    return primary?.image_url || list[0]?.image_url
   }
 
   return (
@@ -127,9 +128,9 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="active">Activo</SelectItem>
-                <SelectItem value="inactive">Inactivo</SelectItem>
-                <SelectItem value="draft">Borrador</SelectItem>
+                  <SelectItem value="activo">Activo</SelectItem>
+                  <SelectItem value="inactivo">Inactivo</SelectItem>
+                  <SelectItem value="agotado">Agotado</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -160,8 +161,8 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
                 </TableRow>
               ) : (
                 filteredProducts.map((product) => {
-                  const primaryImage = getPrimaryImage(product.product_images)
-                  const totalStock = getTotalStock(product.product_variants)
+                  const primaryImage = getPrimaryImage(product.images)
+                  const totalStock = getTotalStock(product.variants)
                   
                   return (
                     <TableRow key={product.id}>
@@ -192,10 +193,10 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {product.categories?.name || '-'}
+                        {product.category?.name || '-'}
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(product.base_price)}
+                        {formatCurrency(product.price)}
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge variant={totalStock < 5 ? 'destructive' : 'secondary'}>
@@ -205,12 +206,12 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
                       <TableCell className="text-center">
                         <Badge
                           variant={
-                            product.status === 'active' ? 'default' :
-                            product.status === 'inactive' ? 'secondary' : 'outline'
+                            product.status === 'activo' ? 'default' :
+                            product.status === 'inactivo' ? 'secondary' : 'outline'
                           }
                         >
-                          {product.status === 'active' ? 'Activo' :
-                           product.status === 'inactive' ? 'Inactivo' : 'Borrador'}
+                          {product.status === 'activo' ? 'Activo' :
+                           product.status === 'inactivo' ? 'Inactivo' : 'Agotado'}
                         </Badge>
                       </TableCell>
                       <TableCell>

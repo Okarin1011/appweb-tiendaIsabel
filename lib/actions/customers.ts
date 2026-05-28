@@ -85,7 +85,7 @@ export async function createCustomer(customer: CustomerInsert) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('customers', 'max')
+  revalidateTag('customers')
   return data
 }
 
@@ -101,7 +101,7 @@ export async function updateCustomer(id: string, customer: CustomerUpdate) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('customers', 'max')
+  revalidateTag('customers')
   return data
 }
 
@@ -116,7 +116,7 @@ export async function deleteCustomer(id: string) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('customers', 'max')
+  revalidateTag('customers')
   return true
 }
 
@@ -180,6 +180,6 @@ export async function updateCustomerCreditLimit(id: string, creditLimit: number)
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('customers', 'max')
+  revalidateTag('customers')
   return data
 }

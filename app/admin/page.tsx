@@ -13,7 +13,7 @@ async function getDashboardData() {
     .from('sales')
     .select('total')
     .gte('created_at', today.toISOString())
-    .eq('status', 'completed')
+    .eq('status', 'completada')
 
   const todayTotal = todaySales?.reduce((sum, sale) => sum + Number(sale.total), 0) || 0
 
@@ -24,7 +24,7 @@ async function getDashboardData() {
     .from('sales')
     .select('total')
     .gte('created_at', firstDayOfMonth.toISOString())
-    .eq('status', 'completed')
+    .eq('status', 'completada')
 
   const monthTotal = monthSales?.reduce((sum, sale) => sum + Number(sale.total), 0) || 0
 
@@ -32,7 +32,7 @@ async function getDashboardData() {
   const { count: productCount } = await supabase
     .from('products')
     .select('*', { count: 'exact', head: true })
-    .eq('status', 'active')
+    .eq('status', 'activo')
 
   // Get customer count
   const { count: customerCount } = await supabase
@@ -42,10 +42,10 @@ async function getDashboardData() {
   // Get active credits
   const { data: activeCredits } = await supabase
     .from('credits')
-    .select('current_balance')
-    .eq('status', 'active')
+    .select('balance')
+    .in('status', ['pendiente', 'aprobado'])
 
-  const totalCredits = activeCredits?.reduce((sum, credit) => sum + Number(credit.current_balance), 0) || 0
+  const totalCredits = activeCredits?.reduce((sum, credit) => sum + Number(credit.balance), 0) || 0
   const creditCount = activeCredits?.length || 0
 
   // Get low stock products
@@ -69,7 +69,7 @@ async function getDashboardData() {
       total,
       sale_type,
       created_at,
-      customers (name)
+      customer:customers (first_name, last_name)
     `)
     .order('created_at', { ascending: false })
     .limit(5)
@@ -211,12 +211,12 @@ export default async function DashboardPage() {
               <p className="text-sm text-muted-foreground">No hay ventas recientes</p>
             ) : (
               <div className="space-y-3">
-                {data.recentSales.map((sale: { id: string; total: number; sale_type: string; created_at: string; customers: { name: string } | null }) => (
+                {data.recentSales.map((sale: { id: string; total: number; sale_type: string; created_at: string; customer: { first_name: string; last_name: string } | null }) => (
                   <div key={sale.id} className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium">{sale.customers?.name || 'Cliente anonimo'}</p>
+                      <p className="text-sm font-medium">{sale.customer ? `${sale.customer.first_name} ${sale.customer.last_name}` : 'Cliente anonimo'}</p>
                       <p className="text-xs text-muted-foreground">
-                        {formatDate(sale.created_at)} - {sale.sale_type === 'cash' ? 'Efectivo' : 'Credito'}
+                        {formatDate(sale.created_at)} - {sale.sale_type === 'contado' ? 'Efectivo' : 'Credito'}
                       </p>
                     </div>
                     <span className="text-sm font-semibold">{formatCurrency(Number(sale.total))}</span>

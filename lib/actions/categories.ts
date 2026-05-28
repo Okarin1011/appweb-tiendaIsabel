@@ -78,7 +78,7 @@ export async function createCategory(category: Omit<CategoryInsert, 'slug'>) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('categories', 'max')
+  revalidateTag('categories')
   return data
 }
 
@@ -105,7 +105,7 @@ export async function updateCategory(id: string, category: CategoryUpdate) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('categories', 'max')
+  revalidateTag('categories')
   return data
 }
 
@@ -119,7 +119,7 @@ export async function deleteCategory(id: string) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('categories', 'max')
+  revalidateTag('categories')
   return true
 }
 
@@ -135,7 +135,7 @@ export async function toggleCategoryActive(id: string, isActive: boolean) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('categories', 'max')
+  revalidateTag('categories')
   return data
 }
 
@@ -152,6 +152,6 @@ export async function reorderCategories(categoryIds: string[]) {
 
   await Promise.all(updates)
   
-  revalidateTag('categories', 'max')
+  revalidateTag('categories')
   return true
 }

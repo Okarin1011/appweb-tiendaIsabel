@@ -11,8 +11,8 @@ async function getCreditsData() {
     .from('credits')
     .select(`
       *,
-      customers (id, name, phone, email),
-      sales (id, total, created_at)
+      customer:customers (id, first_name, last_name, phone),
+      sale:sales (id, total, created_at)
     `)
     .order('created_at', { ascending: false })
 
@@ -21,8 +21,8 @@ async function getCreditsData() {
     return { credits: [], stats: { total: 0, active: 0, totalAmount: 0, overdueCount: 0 } }
   }
 
-  const activeCredits = credits?.filter(c => c.status === 'active') || []
-  const totalAmount = activeCredits.reduce((sum, c) => sum + Number(c.current_balance), 0)
+  const activeCredits = credits?.filter(c => ['pendiente', 'aprobado'].includes(c.status)) || []
+  const totalAmount = activeCredits.reduce((sum, c) => sum + Number(c.balance), 0)
   const overdueCount = activeCredits.filter(c => {
     if (!c.due_date) return false
     return new Date(c.due_date) < new Date()
