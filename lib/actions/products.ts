@@ -150,11 +150,16 @@ export async function createProduct(
     if (variantsError) throw new Error(variantsError.message)
   }
 
-  revalidateTag('products', 'max')
+  revalidateTag('products')
   return newProduct
 }
 
-export async function updateProduct(id: string, product: ProductUpdate) {
+export async function updateProduct(
+  id: string,
+  product: ProductUpdate,
+  images?: Omit<ProductImageInsert, 'product_id'>[],
+  variants?: Omit<ProductVariantInsert, 'product_id'>[]
+) {
   const supabase = await createClient()
 
   // Update slug if name changed
@@ -176,8 +181,26 @@ export async function updateProduct(id: string, product: ProductUpdate) {
     .single()
 
   if (error) throw new Error(error.message)
-  
-  revalidateTag('products', 'max')
+
+  // Replace images if provided
+  if (images && images.length > 0) {
+    await supabase.from('product_images').delete().eq('product_id', id)
+    const { error: imagesError } = await supabase
+      .from('product_images')
+      .insert(images.map(img => ({ ...img, product_id: id })))
+    if (imagesError) throw new Error(imagesError.message)
+  }
+
+  // Replace variants if provided
+  if (variants && variants.length > 0) {
+    await supabase.from('product_variants').delete().eq('product_id', id)
+    const { error: variantsError } = await supabase
+      .from('product_variants')
+      .insert(variants.map(v => ({ ...v, product_id: id })))
+    if (variantsError) throw new Error(variantsError.message)
+  }
+
+  revalidateTag('products')
   return data
 }
 
@@ -191,7 +214,7 @@ export async function deleteProduct(id: string) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('products', 'max')
+  revalidateTag('products')
   return true
 }
 
@@ -211,7 +234,7 @@ export async function updateProductVariant(id: string, stock: number, isAvailabl
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('products', 'max')
+  revalidateTag('products')
   return data
 }
 
@@ -226,7 +249,7 @@ export async function addProductVariant(variant: ProductVariantInsert) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('products', 'max')
+  revalidateTag('products')
   return data
 }
 
@@ -240,7 +263,7 @@ export async function deleteProductVariant(id: string) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('products', 'max')
+  revalidateTag('products')
   return true
 }
 
@@ -259,7 +282,7 @@ export async function addProductImage(image: ProductImageInsert) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('products', 'max')
+  revalidateTag('products')
   return data
 }
 
@@ -273,7 +296,7 @@ export async function deleteProductImage(id: string) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('products', 'max')
+  revalidateTag('products')
   return true
 }
 
@@ -296,7 +319,7 @@ export async function setProductPrimaryImage(productId: string, imageId: string)
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('products', 'max')
+  revalidateTag('products')
   return data
 }
 
@@ -314,4 +337,49 @@ export async function getSizes() {
 
   if (error) throw new Error(error.message)
   return data
+}
+
+export async function createSize(size: { name: string; display_order: number }) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('sizes')
+    .insert(size)
+    .select()
+    .single()
+
+  if (error) return { success: false, error: error.message }
+
+  revalidateTag('sizes')
+  return { success: true, data }
+}
+
+export async function updateSize(id: string, size: { name: string; display_order: number }) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('sizes')
+    .update(size)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) return { success: false, error: error.message }
+
+  revalidateTag('sizes')
+  return { success: true, data }
+}
+
+export async function deleteSize(id: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('sizes')
+    .delete()
+    .eq('id', id)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidateTag('sizes')
+  return { success: true }
 }

@@ -21,8 +21,19 @@ export async function getStoreSettings() {
   return data
 }
 
-export async function updateStoreSettings(settings: StoreSettingsUpdate) {
+export async function updateStoreSettings(idOrSettings: string | StoreSettingsUpdate | null, settingsArg?: StoreSettingsUpdate) {
   const supabase = await createClient()
+
+  // Support both updateStoreSettings(data) and updateStoreSettings(id, data)
+  let settings: StoreSettingsUpdate
+  let explicitId: string | null = null
+
+  if (typeof idOrSettings === 'string') {
+    explicitId = idOrSettings
+    settings = settingsArg!
+  } else {
+    settings = idOrSettings || {}
+  }
 
   // Get the existing settings ID
   const { data: existing, error: fetchError } = await supabase
@@ -33,18 +44,20 @@ export async function updateStoreSettings(settings: StoreSettingsUpdate) {
 
   if (fetchError && fetchError.code !== 'PGRST116') throw new Error(fetchError.message)
 
+  const targetId = explicitId || existing?.id
+
   let data
   let error
 
-  if (existing) {
+  if (targetId) {
     // Update existing
     const result = await supabase
       .from('store_settings')
       .update(settings)
-      .eq('id', existing.id)
+      .eq('id', targetId)
       .select()
       .single()
-    
+
     data = result.data
     error = result.error
   } else {
@@ -57,14 +70,14 @@ export async function updateStoreSettings(settings: StoreSettingsUpdate) {
       })
       .select()
       .single()
-    
+
     data = result.data
     error = result.error
   }
 
   if (error) throw new Error(error.message)
-  
-  revalidateTag('store-settings', 'max')
+
+  revalidateTag('store-settings')
   return data
 }
 

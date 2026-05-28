@@ -13,9 +13,9 @@ async function getProducts() {
     .from('products')
     .select(`
       *,
-      categories (id, name),
-      product_images (id, url, is_primary),
-      product_variants (id, stock, price, sizes (id, name))
+      category:categories (id, name),
+      images:product_images (id, image_url, is_primary),
+      variants:product_variants (id, stock, is_available, size:sizes (id, name))
     `)
     .order('created_at', { ascending: false })
 

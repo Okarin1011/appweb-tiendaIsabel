@@ -33,12 +33,11 @@ interface ProductVariant {
   id?: string
   size_id: string
   stock: number
-  price: number
 }
 
 interface ProductImage {
   id?: string
-  url: string
+  image_url: string
   is_primary: boolean
 }
 
@@ -49,11 +48,11 @@ interface ProductFormProps {
     id: string
     name: string
     description: string | null
-    base_price: number
+    price: number
     category_id: string | null
     status: string
-    product_variants: (ProductVariant & { sizes: Size | null })[]
-    product_images: ProductImage[]
+    variants: (ProductVariant & { size: Size | null })[]
+    images: ProductImage[]
   }
 }
 
@@ -63,18 +62,17 @@ export function ProductForm({ categories, sizes, product }: ProductFormProps) {
 
   const [name, setName] = useState(product?.name || '')
   const [description, setDescription] = useState(product?.description || '')
-  const [basePrice, setBasePrice] = useState(product?.base_price?.toString() || '')
+  const [basePrice, setBasePrice] = useState(product?.price?.toString() || '')
   const [categoryId, setCategoryId] = useState(product?.category_id || '')
-  const [status, setStatus] = useState(product?.status || 'active')
+  const [status, setStatus] = useState(product?.status || 'activo')
   const [variants, setVariants] = useState<ProductVariant[]>(
-    product?.product_variants.map(v => ({
+    product?.variants?.map(v => ({
       id: v.id,
       size_id: v.size_id,
       stock: v.stock,
-      price: v.price,
     })) || []
   )
-  const [images, setImages] = useState<ProductImage[]>(product?.product_images || [])
+  const [images, setImages] = useState<ProductImage[]>(product?.images || [])
   const [imageUrl, setImageUrl] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -83,7 +81,7 @@ export function ProductForm({ categories, sizes, product }: ProductFormProps) {
       toast.error('Primero debes crear tallas en la configuracion')
       return
     }
-    setVariants([...variants, { size_id: sizes[0].id, stock: 0, price: Number(basePrice) || 0 }])
+    setVariants([...variants, { size_id: sizes[0].id, stock: 0 }])
   }
 
   const removeVariant = (index: number) => {
@@ -92,7 +90,7 @@ export function ProductForm({ categories, sizes, product }: ProductFormProps) {
 
   const updateVariant = (index: number, field: keyof ProductVariant, value: string | number) => {
     const updated = [...variants]
-    if (field === 'stock' || field === 'price') {
+    if (field === 'stock') {
       updated[index][field] = Number(value)
     } else {
       updated[index][field] = value as string
@@ -103,7 +101,7 @@ export function ProductForm({ categories, sizes, product }: ProductFormProps) {
   const addImage = () => {
     if (!imageUrl.trim()) return
     const isPrimary = images.length === 0
-    setImages([...images, { url: imageUrl.trim(), is_primary: isPrimary }])
+    setImages([...images, { image_url: imageUrl.trim(), is_primary: isPrimary }])
     setImageUrl('')
   }
 
@@ -134,27 +132,28 @@ export function ProductForm({ categories, sizes, product }: ProductFormProps) {
       const productData = {
         name: name.trim(),
         description: description.trim() || null,
-        base_price: Number(basePrice) || 0,
+        price: Number(basePrice) || 0,
         category_id: categoryId || null,
-        status: status as 'active' | 'inactive' | 'draft',
+        status: status as 'activo' | 'inactivo' | 'agotado',
+        slug: '',
+        compare_at_price: null,
+        cost_price: null,
+        sku: null,
+        barcode: null,
+        is_featured: false,
       }
 
-      let result
       if (isEditing) {
-        result = await updateProduct(product.id, productData, variants, images)
+        await updateProduct(product.id, productData, images, variants)
       } else {
-        result = await createProduct(productData, variants, images)
+        await createProduct(productData, images, variants)
       }
 
-      if (result.success) {
-        toast.success(isEditing ? 'Producto actualizado' : 'Producto creado')
-        router.push('/admin/productos')
-        router.refresh()
-      } else {
-        toast.error(result.error || 'Error al guardar')
-      }
+      toast.success(isEditing ? 'Producto actualizado' : 'Producto creado')
+      router.push('/admin/productos')
+      router.refresh()
     } catch (error) {
-      toast.error('Error al guardar el producto')
+      toast.error(error instanceof Error ? error.message : 'Error al guardar el producto')
     } finally {
       setIsSubmitting(false)
     }
@@ -263,15 +262,6 @@ export function ProductForm({ categories, sizes, product }: ProductFormProps) {
                         value={variant.stock}
                         onChange={(e) => updateVariant(index, 'stock', e.target.value)}
                         placeholder="Stock"
-                        className="w-25"
-                      />
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={variant.price}
-                        onChange={(e) => updateVariant(index, 'price', e.target.value)}
-                        placeholder="Precio"
                         className="flex-1"
                       />
                       <Button
@@ -318,7 +308,7 @@ export function ProductForm({ categories, sizes, product }: ProductFormProps) {
                       }`}
                     >
                       <img
-                        src={image.url}
+                        src={image.image_url}
                         alt={`Imagen ${index + 1}`}
                         className="w-full h-24 object-cover"
                       />
@@ -368,9 +358,9 @@ export function ProductForm({ categories, sizes, product }: ProductFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Activo</SelectItem>
-                  <SelectItem value="inactive">Inactivo</SelectItem>
-                  <SelectItem value="draft">Borrador</SelectItem>
+                  <SelectItem value="activo">Activo</SelectItem>
+                  <SelectItem value="inactivo">Inactivo</SelectItem>
+                  <SelectItem value="agotado">Agotado</SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>

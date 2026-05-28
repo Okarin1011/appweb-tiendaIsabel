@@ -108,7 +108,7 @@ export async function updateCredit(id: string, credit: CreditUpdate) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('credits', 'max')
+  revalidateTag('credits')
   return data
 }
 
@@ -130,7 +130,7 @@ export async function updateCreditStatus(id: string, status: CreditStatus) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('credits', 'max')
+  revalidateTag('credits')
   return data
 }
 
@@ -163,7 +163,7 @@ export async function registerPayment(payment: Omit<CreditMovementInsert, 'id' |
   if (error) throw new Error(error.message)
   
   // The trigger will automatically update the credit's amount_paid
-  revalidateTag('credits', 'max')
+  revalidateTag('credits')
   return data
 }
 
@@ -220,7 +220,7 @@ export async function cancelCredit(creditId: string, notes?: string) {
 
   if (error) throw new Error(error.message)
   
-  revalidateTag('credits', 'max')
+  revalidateTag('credits')
   return data
 }
 
